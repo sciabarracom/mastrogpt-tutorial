@@ -1,3 +1,5 @@
+<link rel="stylesheet" href="/css/almond.min.css" />
+
 <script>
     let body = `<h1>Welcome to MastroGPT</h1>
     <p>Please select the chat you want to use on the top menu.</p>`;
@@ -16,7 +18,8 @@
         })
             .then((r) => r.text())
             .then((t) => {
-                body = t;
+                if(t)
+                 body = t;
             })
             .catch((e) => {
                 body = "<h1>Error!</h1><p>Check logs for details.</p>";

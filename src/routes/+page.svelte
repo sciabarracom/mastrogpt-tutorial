@@ -1,3 +1,4 @@
+<link rel="stylesheet" href="/css/almond.min.css" />
 <script>
     import { onMount } from "svelte";
     let base = document.location.href.replace(/index\.html$/, "");
