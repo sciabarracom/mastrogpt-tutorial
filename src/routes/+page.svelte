@@ -36,5 +36,5 @@
 </div>
 <div id="iframe-container">
     <iframe title="chat" id="chat" src="/chat"></iframe>
-    <iframe title="display" id="display" src="/display.html"></iframe>
+    <iframe title="display" id="display" src="/display"></iframe>
 </div>

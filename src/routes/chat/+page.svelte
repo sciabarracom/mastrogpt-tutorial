@@ -1,20 +1,20 @@
 <script>
     import { marked } from "marked";
+    import { afterUpdate } from "svelte";
 
     // Globals
+    let chatArea;
     let invoker = undefined;
     let messages = [];
+
     const displayWindow =
         window.parent.document.getElementById("display").contentWindow;
-
-
 
     // Constants
     const BOT_IMG = "/img/robot-mini.png";
     const PERSON_IMG = "/img/human-mini.png";
     const BOT_NAME = "BOT";
     const PERSON_NAME = "YOU";
-
 
     // Classes
     class Invoker {
@@ -66,14 +66,15 @@
     }
 
     function appendMessage(name, img, side, text) {
-        //   Simple solution for small apps
-        console.log(text);
         let html = marked.parse(text);
-        messages.push([side, img, name, html]);
-
-        //msgerChat.insertAdjacentHTML("beforeend", msgHTML);
-        //msgerChat.scrollTop += 500;
+        messages = [...messages, [side, img, name, html]];
     }
+
+    afterUpdate(() => {
+        if (chatArea) {
+            chatArea.scroll({ top: chatArea.scrollHeight, behavior: "smooth" });
+        }
+    });
 
     function bot(msg) {
         appendMessage(BOT_NAME, BOT_IMG, "left", msg);
@@ -81,7 +82,7 @@
 
     function human(msg) {
         appendMessage(PERSON_NAME, PERSON_IMG, "right", msg);
-        msgerInput.value = "";
+        input = "";
     }
 
     function formatDate(date) {
@@ -90,19 +91,22 @@
         return `${h.slice(-2)}:${m.slice(-2)}`;
     }
 
+    let input = "";
+    let title = "-";
 
-    let input = ""
-    let title = "-"
-
-    function submitForm(event) {
+    async function submitForm(event) {
         event.preventDefault();
 
         if (!input) return;
 
+        let question = input;
         human(input);
 
         if (invoker) {
-            invoker.invoke(input).then((reply) => bot(reply));
+            console.log("question ", question);
+            let answer = await invoker.invoke(question)
+            console.log("answer", answer);
+            bot(answer);
         } else {
             bot(
                 "Please select a chat, clicking on one button on the top area.",
@@ -110,15 +114,20 @@
         }
     }
 
-    window.addEventListener("message", async function (ev) {
+    async function handleMessage(ev) {
         if (ev.data.type != "chat") return;
-        console.log(ev);
-        invoker = new Invoker(ev.data.name, ev.data.url);
-        title = ev.data.name;
-        messages = []
-        bot(await invoker.invoke(""));
-    });
+        let { name, url } = ev.data;
+        //console.log("selected", name, url);
+        invoker = new Invoker(name, url);
+        title = name;
+        messages = [];
+        let starter = await invoker.invoke("");
+        //console.log("starter", starter);
+        bot(starter);
+    }
 </script>
+
+<svelte:window on:message={handleMessage} />
 
 <link rel="stylesheet" href="/css/chat.css" />
 
@@ -129,34 +138,34 @@
             <span><i class="fas fa-cog"></i></span>
         </div>
     </header>
-    <main id="chat-area" class="msger-chat">
+    <main id="chat-area" bind:this={chatArea} class="msger-chat">
         {#each messages as [side, img, name, html]}
-            <div class="msg ${side}-msg">
+            <div class="msg {side}-msg">
                 <div class="msg-bubble">
                     <div class="msg-info">
                         <div class="msg-info-name">
                             <div
                                 class="msg-img"
-                                style="background-image: url(${img})"
+                                style="background-image: url({img})"
                             ></div>
-                            <span>${name}</span>
+                            <span>{name}</span>
                         </div>
                         <div class="msg-info-time">
-                            ${formatDate(new Date())}
+                            {formatDate(new Date())}
                         </div>
                     </div>
-                    <div class="msg-text">${html}</div>
+                    <div class="msg-text">{@html html}</div>
                 </div>
             </div>
         {/each}
     </main>
-    <form class="msger-inputarea">
+    <form class="msger-inputarea" on:submit|preventDefault={submitForm}>
         <input
             bind:value={input}
             type="text"
             class="msger-input"
             placeholder="Enter your message..."
         />
-        <button type="submit" class="msger-send-btn" on:submit={submitForm}>Send</button>
+        <button class="msger-send-btn" on:click={submitForm}>Send</button>
     </form>
 </section>
