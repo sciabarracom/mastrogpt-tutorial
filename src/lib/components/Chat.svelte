@@ -1,0 +1,436 @@
+<script>
+    import { marked } from "marked";
+    import { afterUpdate } from "svelte";
+
+    let noChoiceYet = true;
+    let counter = 0;
+
+    export const receiveMessage = async (name, url) => {
+        // let url = $page.url.href + "api/my/" + services[name];
+        noChoiceYet = false;
+
+        //console.log("selected", name, url);
+        invoker = new Invoker(name, url);
+        title = name;
+        messages = [];
+        let { answer } = await invoker.invoke("");
+        //console.log("starter", starter);
+        bot(answer);
+    };
+
+    // Globals
+    let chatArea;
+    let invoker = undefined;
+    let messages = [];
+
+    // const displayWindow =
+    //     window.parent.document.getElementById("display").contentWindow;
+
+    // Constants
+    const BOT_IMG = "/img/robot-mini.png";
+    const PERSON_IMG = "/img/human-mini.png";
+    const BOT_NAME = "BOT";
+    const PERSON_NAME = "YOU";
+
+    // Classes
+    class Invoker {
+        constructor(name, url) {
+            this.name = name;
+            this.url = url;
+        }
+
+        async invoke(msg) {
+            // welcome message no input
+            if (msg == null) {
+                return "Welcome, you have selected " + this.name;
+            }
+            // no url
+            if (this.url == null)
+                return "Welcome, please select the chat application you want to use by clicking a  button on top.";
+            // prepare a request
+            let json = {
+                input: msg,
+            };
+
+            json["state"] = counter++;
+
+            // send the request
+            return fetch(this.url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(json),
+            })
+                .then((r) => r.json())
+                .then((r) => {
+                    // got answer from the backend
+                    console.log(r);
+                    this.state = r.state;
+                    let data = r;
+                    let output = data.output;
+                    delete data["output"];
+                    delete data["state"];
+                    // displayWindow.postMessage(data);
+                    return { answer: output, data };
+                })
+                .catch((e) => {
+                    console.log(e);
+                    return `ERROR interacting with ${this.url}`;
+                });
+        }
+    }
+
+    function appendMessage(name, img, side, text) {
+        if (text) {
+            let html = marked.parse(text);
+            messages = [...messages, [side, img, name, html]];
+        } else {
+            messages = [
+                ...messages,
+                [side, img, name, "Didn't get a response from the server..."],
+            ];
+        }
+    }
+
+    afterUpdate(() => {
+        if (chatArea) {
+            chatArea.scroll({ top: chatArea.scrollHeight, behavior: "smooth" });
+        }
+    });
+
+    function bot(msg) {
+        appendMessage(BOT_NAME, BOT_IMG, "left", msg);
+    }
+
+    function human(msg) {
+        appendMessage(PERSON_NAME, PERSON_IMG, "right", msg, "");
+        input = "";
+    }
+
+    function formatDate(date) {
+        const h = "0" + date.getHours();
+        const m = "0" + date.getMinutes();
+        return `${h.slice(-2)}:${m.slice(-2)}`;
+    }
+
+    let input = "";
+    let title = "---";
+
+    async function submitForm(event) {
+        event.preventDefault();
+
+        if (!input) return;
+
+        let question = input;
+        human(input);
+
+        if (invoker) {
+            console.log("question ", question);
+            let { answer, data } = await invoker.invoke(question);
+            console.log("answer", answer);
+            bot(answer);
+            await display(data);
+        } else {
+            bot("Please select a chat from the side menu.");
+        }
+    }
+
+    async function display(data) {
+        const body = await fetch("/api/my/mastrogpt/display", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+        })
+            .then((r) => r.text())
+            .then((t) => {
+                return t;
+            })
+            .catch((e) => {
+                console.log(e);
+                return "<h1>Error!</h1><p>Check logs for details.</p>";
+            });
+
+        if (body) {
+            bot(body);
+        }
+    }
+</script>
+
+<!-- <svelte:window on:message={handleMessage} /> -->
+
+<!-- <link rel="stylesheet" href="/css/chat.css" /> -->
+
+<div class="relative h-screen w-full">
+    <section
+        class="fixed top-16 inset-0 md:left-64 md:top-2 md:bottom-2 md:right-0 flex flex-col grow border-4 border-bg-black shadow-lg bg-white rounded-xl overflow-x-hidden overflow-y-auto"
+    >
+        <header
+            class="flex justify-between p-5 bg-surface-500 rounded-lg text-white"
+        >
+            <div class="tracking-wider text-2xl font-bold">{title}</div>
+            <span><i class="fas fa-cog"></i></span>
+        </header>
+
+        <main id="chat-area" bind:this={chatArea} class="msger-chat p-8">
+            {#if noChoiceYet}
+                <div class="msg left-msg">
+                    <div class="msg-bubble">
+                        <div class="msg-info">
+                            <div class="msg-info-name">
+                                <div
+                                    class="msg-img"
+                                    style="background-image: url({BOT_IMG})"
+                                ></div>
+                                <span>{name}</span>
+                            </div>
+                            <div class="msg-info-time">
+                                {formatDate(new Date())}
+                            </div>
+                        </div>
+                        <div class="msg-text">
+                            <h1>Welcome to MastroGPT</h1>
+                            <p>
+                                Please select the chat you want to use on menu.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            {:else}
+                {#each messages as [side, img, name, html]}
+                    <div class="msg {side}-msg">
+                        <div class="msg-bubble">
+                            <div class="msg-info">
+                                <div class="msg-info-name">
+                                    <div
+                                        class="msg-img"
+                                        style="background-image: url({img})"
+                                    ></div>
+                                    <span>{name}</span>
+                                </div>
+                                <div class="msg-info-time">
+                                    {formatDate(new Date())}
+                                </div>
+                            </div>
+                            <div class="msg-text">{@html html}</div>
+                        </div>
+                    </div>
+                {/each}
+            {/if}
+        </main>
+        <form class="msger-inputarea" on:submit|preventDefault={submitForm}>
+            <input
+                bind:value={input}
+                type="text"
+                class="input bg-gray-100"
+                placeholder="Enter your message..."
+            />
+            <button class="msger-send-btn" on:click={submitForm}>Send</button>
+        </form>
+    </section>
+</div>
+
+<style>
+    .msger-chat {
+        flex: 1;
+        overflow-y: auto;
+        padding: 10px;
+        background-color: #fcfcfe;
+    }
+    .msger-chat::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .msger-chat::-webkit-scrollbar-track {
+        background: #ddd;
+    }
+
+    .msger-chat::-webkit-scrollbar-thumb {
+        background: #bdbdbd;
+    }
+
+    .msger-inputarea {
+        display: flex;
+        padding: 10px;
+        border-top: var(--border);
+        background: #eee;
+    }
+
+    .msger-inputarea * {
+        padding: 10px;
+        border: none;
+        border-radius: 3px;
+        font-size: 1em;
+    }
+
+    .msger-input {
+        flex: 1;
+        background: #ddd;
+    }
+
+    .msger-send-btn {
+        margin-left: 10px;
+        background: #326699;
+        color: #fff;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background 0.23s;
+    }
+
+    .msger-send-btn:hover {
+        background: #327799;
+    }
+
+    .msger-chat {
+        background-color: #fcfcfe;
+    }
+
+    .msg-text {
+        overflow: auto;
+        max-width: 100%;
+    }
+
+    .msg {
+        display: flex;
+        align-items: flex-end;
+        margin-bottom: 10px;
+    }
+
+    .msg:last-of-type {
+        margin: 0;
+    }
+
+    .msg-img {
+        width: 50px;
+        height: 50px;
+        margin-right: 10px;
+        margin-left: 10px;
+        background: #ddd;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: cover;
+        border-radius: 50%;
+    }
+
+    .msg-bubble {
+        max-width: 90%;
+        padding: 15px;
+        border-radius: 15px;
+        background: var(--left-msg-bg);
+    }
+
+    .msg-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .msg-info-name {
+        margin-right: 20px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .msg-info-time {
+        font-size: 0.85em;
+    }
+
+    .left-msg .msg-bubble {
+        border-bottom-left-radius: 0;
+    }
+
+    .right-msg {
+        flex-direction: row-reverse;
+    }
+
+    .right-msg .msg-bubble {
+        background: var(--right-msg-bg);
+        border-bottom-right-radius: 0;
+    }
+
+    :root {
+        --body-bg: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        --msger-bg: #fff;
+        --border: 2px solid #ddd;
+        --left-msg-bg: #ececec;
+        --right-msg-bg: #579ffb;
+    }
+
+    .msger {
+        display: flex;
+        flex-flow: column wrap;
+        justify-content: space-between;
+        width: 100%;
+        max-width: 867px;
+        margin: 25px 10px;
+        height: calc(100% - 50px);
+        border: var(--border);
+        border-radius: 5px;
+        background: var(--msger-bg);
+        box-shadow: 0 15px 15px -5px rgba(0, 0, 0, 0.2);
+    }
+
+    .msger-header {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px;
+        border-bottom: var(--border);
+        background: #eee;
+        color: #666;
+    }
+
+    .msger-chat {
+        flex: 1;
+        overflow-y: auto;
+        padding: 10px;
+    }
+
+    .msger-chat::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .msger-chat::-webkit-scrollbar-track {
+        background: #ddd;
+    }
+
+    .msger-chat::-webkit-scrollbar-thumb {
+        background: #bdbdbd;
+    }
+
+    .msger-inputarea {
+        display: flex;
+        padding: 10px;
+        border-top: var(--border);
+        background: #eee;
+    }
+
+    .msger-inputarea * {
+        padding: 10px;
+        border: none;
+        border-radius: 3px;
+        font-size: 1em;
+    }
+
+    .msger-input {
+        flex: 1;
+        background: #ddd;
+    }
+
+    .msger-send-btn {
+        margin-left: 10px;
+        background: #326699;
+        color: #fff;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background 0.23s;
+    }
+
+    .msger-send-btn:hover {
+        background: #327799;
+    }
+
+    .msger-chat {
+        background-color: #fcfcfe;
+    }
+</style>
