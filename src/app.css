@@ -1,0 +1,17 @@
+/* Write your global styles here, in PostCSS syntax */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+    font-family: 'arista';
+    src: url('/fonts/Arista.ttf');
+    font-weight: bold;
+    font-style: normal;
+    font-size: 5vw;
+}
+
+html,
+body {
+    @apply h-full;
+}
