@@ -14,7 +14,7 @@ def board(args):
     try: 
         print(fen)
         board = chess.Board(fen)
-        data = {"html": chess.svg.board(board=board) }
+        data = {"html": chess.svg.board(board=board, size=500) }
         out = render("html.html", data)
     except Exception as e:
         data =  {"title": "Bad Chess Position", "message": str(e)}
