@@ -9,6 +9,14 @@
     import { Modal, Drawer } from "@skeletonlabs/skeleton";
     import { page } from "$app/stores";
     import Chat from "$lib/components/Chat.svelte";
+    import Display from "$lib/components/Display.svelte";
+
+    let showSide = false;
+    let title = "---";
+
+    function toggleSide() {
+        showSide = !showSide;
+    }
 
     const drawerStore = getDrawerStore();
 
@@ -34,9 +42,11 @@
     });
 
     let receiveMessage;
+    let displayResponse;
 
     let sendMessage = (name) => {
         let url = $page.url.href + "api/my/" + services[name];
+        title = services[name];
         receiveMessage(name, url);
     };
 </script>
@@ -46,10 +56,10 @@
 <Modal />
 
 <!-- (AppShell) -->
-<div class="flex h-full w-auto flex-col justify-between">
+<div class="flex h-full w-auto h-full flex-col justify-between">
     <AppShell
-        slotSidebarLeft="bg-surface-500/5 w-0 md:w-64"
-        slotPageHeader="md:hidden"
+        slotSidebarLeft="bg-surface-500/5 w-0 lg:w-64"
+        slotPageHeader="lg:hidden"
         regionPage={"scroll-smooth"}
     >
         <!-- (header) -->
@@ -57,8 +67,8 @@
             <Navigation {services} {sendMessage} />
         </svelte:fragment>
         <!-- <svelte:fragment slot="sidebarRight">Sidebar Right</svelte:fragment> -->
-        <svelte:fragment slot="pageHeader"
-            ><AppBar>
+        <svelte:fragment slot="pageHeader">
+            <AppBar>
                 <svelte:fragment slot="trail">
                     <div
                         class="flex flex-row-reverse items-center justify-between w-full"
@@ -88,15 +98,42 @@
                 </svelte:fragment>
 
                 <!-- <svelte:fragment slot="trail"><LightSwitch /></svelte:fragment> -->
-            </AppBar></svelte:fragment
-        >
+            </AppBar>
+        </svelte:fragment>
 
         <!-- Content -->
-        <div class="relative h-full w-full p-2 py-4">
-            <Chat bind:receiveMessage />
+        <div
+            class="relative flex flex-col h-full w-full max-h-full overflow-hidden"
+        >
+            <header
+                class="flex justify-between items-center p-2 mt-1 mx-2 bg-surface-500 rounded-xl text-white"
+            >
+                <div class="tracking-wider text-2xl font-bold ml-2">
+                    {title}
+                </div>
+                <button
+                    class="btn variant-filled-secondary btn-sm md:btn-md rounded-lg tracking-wider mr-1"
+                    on:click={toggleSide}
+                    >{showSide ? "Close Side View" : "Open Side View"}</button
+                >
+            </header>
+            <div
+                class="absolute inset-0 top-[7%] md:top-[9%] lg:top-[8%] flex gap-0 overflow-auto"
+            >
+                <div class="h-full w-full">
+                    <Chat
+                        bind:receiveMessage
+                        bind:sideOpened={showSide}
+                        sendDisplayData={displayResponse}
+                    />
+                </div>
+                {#if showSide}
+                    <div class="h-full w-full">
+                        <Display bind:displayResponse />
+                    </div>
+                {/if}
+            </div>
         </div>
-        <!-- <iframe title="chat" id="chat" src="/chat"></iframe>
-                 -->
     </AppShell>
 </div>
 

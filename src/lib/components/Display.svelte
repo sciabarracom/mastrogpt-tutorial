@@ -1,17 +1,31 @@
 <script>
-    import { onMount } from "svelte";
+    let body = "";
 
-    let body = ``;
-
-    export let data = undefined;
     // receive messages and forward to the display method
-    onMount(() => {
-        if (data) {
-        }
-    });
+    export async function displayResponse(data) {
+        console.log("what");
+        body = data;
+    }
 </script>
 
-{@html body}
+<section
+    class="flex p-2 w-full h-full flex-col grow border-4 border-bg-black shadow-lg bg-white rounded-xl overflow-x-hidden overflow-y-auto"
+>
+    {#if body}
+        {@html body}
+    {:else}
+        <div class="flex flex-col items-center h-full mt-48">
+            <h1
+                class="font-semibold font-arista text-4xl text-center text-surface-500 p-8 tracking-wide"
+            >
+                Welcome to MastroGPT
+            </h1>
+            <p class="text-lg">
+                Please select the chat you want to use in the menu.
+            </p>
+        </div>
+    {/if}
+</section>
 
 <style>
     :root {

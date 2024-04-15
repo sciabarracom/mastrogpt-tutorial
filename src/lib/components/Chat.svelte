@@ -2,6 +2,9 @@
     import { marked } from "marked";
     import { afterUpdate } from "svelte";
 
+    export let sideOpened;
+    export let sendDisplayData;
+
     let noChoiceYet = true;
     let counter = 0;
 
@@ -11,7 +14,6 @@
 
         //console.log("selected", name, url);
         invoker = new Invoker(name, url);
-        title = name;
         messages = [];
         let { answer } = await invoker.invoke("");
         //console.log("starter", starter);
@@ -113,7 +115,6 @@
     }
 
     let input = "";
-    let title = "---";
 
     async function submitForm(event) {
         event.preventDefault();
@@ -150,7 +151,11 @@
             });
 
         if (body) {
-            bot(body);
+            if (sideOpened) {
+                sendDisplayData(body);
+            } else {
+                bot(body);
+            }
         }
     }
 </script>
@@ -158,19 +163,15 @@
 <!-- <svelte:window on:message={handleMessage} /> -->
 
 <!-- <link rel="stylesheet" href="/css/chat.css" /> -->
-
-<div class="relative h-screen w-full">
+<div class="relative w-full h-full max-h-full">
     <section
-        class="fixed top-16 inset-0 md:left-64 md:top-2 md:bottom-2 md:right-0 flex flex-col grow border-4 border-bg-black shadow-lg bg-white rounded-xl overflow-x-hidden overflow-y-auto"
+        class="max-h-full h-full flex flex-col border-4 border-bg-black shadow-lg bg-white rounded-xl overflow-x-hidden overflow-y-scroll"
     >
-        <header
-            class="flex justify-between p-5 bg-surface-500 rounded-lg text-white"
+        <main
+            id="chat-area"
+            bind:this={chatArea}
+            class="msger-chat p-8 overflow-x-hidden overflow-y-auto max-h-full h-full scroll-smooth"
         >
-            <div class="tracking-wider text-2xl font-bold">{title}</div>
-            <span><i class="fas fa-cog"></i></span>
-        </header>
-
-        <main id="chat-area" bind:this={chatArea} class="msger-chat p-8">
             {#if noChoiceYet}
                 <div class="msg left-msg">
                     <div class="msg-bubble">
@@ -230,8 +231,6 @@
 
 <style>
     .msger-chat {
-        flex: 1;
-        overflow-y: auto;
         padding: 10px;
         background-color: #fcfcfe;
     }
@@ -380,24 +379,6 @@
         color: #666;
     }
 
-    .msger-chat {
-        flex: 1;
-        overflow-y: auto;
-        padding: 10px;
-    }
-
-    .msger-chat::-webkit-scrollbar {
-        width: 6px;
-    }
-
-    .msger-chat::-webkit-scrollbar-track {
-        background: #ddd;
-    }
-
-    .msger-chat::-webkit-scrollbar-thumb {
-        background: #bdbdbd;
-    }
-
     .msger-inputarea {
         display: flex;
         padding: 10px;
@@ -412,11 +393,6 @@
         font-size: 1em;
     }
 
-    .msger-input {
-        flex: 1;
-        background: #ddd;
-    }
-
     .msger-send-btn {
         margin-left: 10px;
         background: #326699;
@@ -428,9 +404,5 @@
 
     .msger-send-btn:hover {
         background: #327799;
-    }
-
-    .msger-chat {
-        background-color: #fcfcfe;
     }
 </style>
