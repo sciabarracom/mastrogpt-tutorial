@@ -2,6 +2,9 @@
     import "../app.css";
 
     import { onMount } from "svelte";
+    import { fade, slide } from "svelte/transition";
+    import { sineInOut } from "svelte/easing";
+
     import Navigation from "../lib/components/Navigation.svelte";
     import { AppBar, AppShell, getDrawerStore } from "@skeletonlabs/skeleton";
 
@@ -128,8 +131,21 @@
                     />
                 </div>
                 {#if showSide}
-                    <div class="h-full w-full">
-                        <Display bind:displayResponse />
+                    <div
+                        class="h-full w-full"
+                        transition:slide={{
+                            delay: 0,
+                            duration: 100,
+                            easing: sineInOut,
+                            axis: "x",
+                        }}
+                    >
+                        <div
+                            class="h-full w-full"
+                            transition:fade={{ delay: 100, duration: 100 }}
+                        >
+                            <Display bind:displayResponse />
+                        </div>
                     </div>
                 {/if}
             </div>
