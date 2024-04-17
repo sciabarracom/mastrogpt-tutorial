@@ -109,7 +109,7 @@
             class="relative flex flex-col h-full w-full max-h-full overflow-hidden"
         >
             <header
-                class="flex justify-between items-center p-2 mt-1 mx-2 bg-surface-500 rounded-xl text-white"
+                class="flex justify-between items-center p-2 mt-1 mx-2 bg-surface-500 rounded-xl text-white shadow"
             >
                 <div class="tracking-wider text-2xl font-bold ml-2">
                     {title}
