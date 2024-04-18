@@ -1,6 +1,14 @@
 <script>
-    let body = `<h1>Welcome to MastroGPT</h1>
-    <p>Please select the chat you want to use on the top menu.</p>`;
+    let body = `<div class="flex flex-col items-center h-full mt-48">
+            <h1
+                class="font-semibold font-arista text-4xl text-center text-surface-500 p-8 tracking-wide"
+            >
+                Welcome to MastroGPT
+            </h1>
+            <p class="text-lg">
+                Please select the chat you want to use in the menu.
+            </p>
+        </div>`;
 
     // receive messages and forward to the display method
     async function handleMessages(ev) {
