@@ -65,7 +65,6 @@
                 .then((r) => r.json())
                 .then((r) => {
                     // got answer from the backend
-                    console.log(r);
                     this.state = r.state;
                     let data = r;
                     let output = data.output;
@@ -75,7 +74,7 @@
                     return { answer: output, data };
                 })
                 .catch((e) => {
-                    console.log(e);
+                    console.error(e);
                     return `ERROR interacting with ${this.url}`;
                 });
         }
@@ -230,6 +229,22 @@
 </div>
 
 <style>
+    pre,
+    code {
+        padding: 30px;
+        box-sizing: border-box;
+        --moz-box-sizing: border-box;
+        --webkit-box-sizing: border-box;
+        display: block;
+        white-space: pre-wrap;
+        white-space: -moz-pre-wrap;
+        white-space: -pre-wrap;
+        white-space: -o-pre-wrap;
+        word-wrap: break-word;
+        width: 100%;
+        overflow-x: auto;
+        max-width: 350px;
+    }
     .msger-chat {
         padding: 10px;
         background-color: #fcfcfe;
@@ -284,7 +299,7 @@
 
     .msg-text {
         overflow: auto;
-        max-width: 100%;
+        max-width: 400px;
     }
 
     .msg {
@@ -310,7 +325,7 @@
     }
 
     .msg-bubble {
-        max-width: 90%;
+        max-width: 98%;
         padding: 15px;
         border-radius: 15px;
         background: var(--left-msg-bg);

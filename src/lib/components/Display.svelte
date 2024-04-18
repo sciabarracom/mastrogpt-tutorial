@@ -1,18 +1,23 @@
 <script>
-    let body = "";
+    let isEmpty = true;
 
     // receive messages and forward to the display method
     export async function displayResponse(data) {
-        console.log("what");
-        body = data;
+        console.log("received data");
+        isEmpty = false;
+        const displayWindow =
+            window.parent.document.getElementById("display").contentWindow;
+        displayWindow.postMessage(data);
     }
 </script>
 
 <section
-    class="flex p-2 w-full h-full flex-col grow border-4 border-bg-black shadow-lg bg-white rounded-xl overflow-x-hidden overflow-y-auto"
+    class="w-full h-full border-4 p-1 border-bg-black shadow-lg bg-white rounded-xl overflow-auto"
 >
-    {#if body}
-        {@html body}
+    <iframe class="w-full h-full" title="display" id="display" src="/display"
+    ></iframe>
+
+    <!-- {#if !isEmpty}
     {:else}
         <div class="flex flex-col items-center h-full mt-48">
             <h1
@@ -24,7 +29,7 @@
                 Please select the chat you want to use in the menu.
             </p>
         </div>
-    {/if}
+    {/if} -->
 </section>
 
 <style>

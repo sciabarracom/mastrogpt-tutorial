@@ -121,15 +121,13 @@
                 >
             </header>
             <div
-                class="absolute inset-0 top-[7%] md:top-[9%] lg:top-[8%] flex gap-0 overflow-auto"
+                class="absolute inset-0 bottom-0 top-[7%] md:top-[9%] lg:top-[8%] flex max-w-[1/2] gap-0 overflow-x-clip overflow-y-auto"
             >
-                <div class="h-full w-full">
-                    <Chat
-                        bind:receiveMessage
-                        bind:sideOpened={showSide}
-                        sendDisplayData={displayResponse}
-                    />
-                </div>
+                <Chat
+                    bind:receiveMessage
+                    bind:sideOpened={showSide}
+                    sendDisplayData={displayResponse}
+                />
                 {#if showSide}
                     <div
                         class="h-full w-full"
@@ -140,12 +138,7 @@
                             axis: "x",
                         }}
                     >
-                        <div
-                            class="h-full w-full"
-                            transition:fade={{ delay: 100, duration: 100 }}
-                        >
-                            <Display bind:displayResponse />
-                        </div>
+                        <Display bind:displayResponse />
                     </div>
                 {/if}
             </div>
