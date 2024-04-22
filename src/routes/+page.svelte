@@ -13,6 +13,7 @@
     import { page } from "$app/stores";
     import Chat from "$lib/components/Chat.svelte";
     import Display from "$lib/components/Display.svelte";
+    import ModelComboBox from "$lib/components/ModelComboBox.svelte";
 
     let showSide = false;
     let title = "---";
@@ -48,10 +49,19 @@
     let displayResponse;
 
     let sendMessage = (name) => {
+        if (services[name] === "llama/ollama") {
+            usingOllama = true;
+        } else {
+            usingOllama = false;
+        }
+
         let url = $page.url.href + "api/my/" + services[name];
         title = services[name];
         receiveMessage(name, url);
     };
+
+    let chosenLlama;
+    let usingOllama = false;
 </script>
 
 <!-- Overlays -->
@@ -111,8 +121,13 @@
             <header
                 class="flex justify-between items-center p-2 mt-1 mx-2 bg-surface-500 rounded-xl text-white shadow"
             >
-                <div class="tracking-wider text-2xl font-bold ml-2">
-                    {title}
+                <div class="flex items-center gap-6">
+                    <div class="tracking-wider text-2xl font-bold ml-2">
+                        {title}
+                    </div>
+                    {#if title === "llama/ollama"}
+                        <ModelComboBox bind:comboboxValue={chosenLlama} />
+                    {/if}
                 </div>
                 <button
                     class="btn variant-filled-secondary btn-sm md:btn-md rounded-lg tracking-wider mr-1"
@@ -121,11 +136,13 @@
                 >
             </header>
             <div
-                class="absolute inset-0 bottom-0 top-[7%] md:top-[9%] lg:top-[8%] flex max-w-[1/2] gap-0 overflow-x-clip overflow-y-auto"
+                class="absolute inset-0 bottom-0 top-[9%] md:top-[10%] lg:top-[9.5%] flex max-w-[1/2] gap-0 overflow-x-clip overflow-y-auto"
             >
                 <Chat
                     bind:receiveMessage
                     bind:sideOpened={showSide}
+                    {usingOllama}
+                    {chosenLlama}
                     sendDisplayData={displayResponse}
                 />
                 {#if showSide}

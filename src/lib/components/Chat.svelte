@@ -5,7 +5,11 @@
     export let sideOpened;
     export let sendDisplayData;
 
+    export let chosenLlama = "";
+    export let usingOllama;
+
     let noChoiceYet = true;
+    let isThinking = false;
     let counter = 0;
 
     export const receiveMessage = async (name, url) => {
@@ -55,6 +59,10 @@
             };
 
             json["state"] = counter++;
+
+            if (usingOllama) {
+                json["model"] = chosenLlama;
+            }
 
             // send the request
             return fetch(this.url, {
@@ -124,11 +132,19 @@
         human(input);
 
         if (invoker) {
+            isThinking = true;
+
             console.log("question ", question);
             let { answer, data } = await invoker.invoke(question);
             console.log("answer", answer);
-            bot(answer);
-            await display(data);
+            isThinking = false;
+
+            if (answer) {
+                bot(answer);
+                await display(data);
+            } else {
+                bot("Didn't get a response from the server...");
+            }
         } else {
             bot("Please select a chat from the side menu.");
         }
@@ -214,6 +230,31 @@
                         </div>
                     </div>
                 {/each}
+                {#if isThinking}
+                    <div class="msg left-msg">
+                        <div
+                            class="msg-bubble
+                            bg-gray-100
+                            animate-pulse
+                            animate-pulse-slow
+                        "
+                        >
+                            <div class="msg-info">
+                                <div class="msg-info-name">
+                                    <div
+                                        class="msg-img"
+                                        style="background-image: url({BOT_IMG})"
+                                    ></div>
+                                    <span>{BOT_NAME}</span>
+                                </div>
+                                <div class="msg-info-time">
+                                    {formatDate(new Date())}
+                                </div>
+                            </div>
+                            <div class="msg-text">&#8230;</div>
+                        </div>
+                    </div>
+                {/if}
             {/if}
         </main>
         <form class="msger-inputarea" on:submit|preventDefault={submitForm}>
