@@ -12,6 +12,10 @@ function main(arg) {
                 "name": "OpenAI",
                 "url": "openai/chat"
             },
+            {
+                "name": "Private LLM",
+                "url": "llama/ollama"
+            }
         ]
     };
     return { "body": data };
