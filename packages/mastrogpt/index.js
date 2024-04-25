@@ -5,16 +5,12 @@ function main(arg) {
     const data = {
         "services": [
             {
-                "name": "Demo",
-                "url": "mastrogpt/demo",
-            },
-            {
-                "name": "OpenAI",
-                "url": "openai/chat"
-            },
-            {
                 "name": "Private LLM",
                 "url": "llama/ollama"
+            },
+            {
+                "name": "Tester",
+                "url": "mastrogpt/tester",
             }
         ]
     };
