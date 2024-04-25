@@ -8,8 +8,10 @@
         "vscode": {
             "extensions": [
                 "nuvolaris.nuvolaris-vscode-extension",
-				"ms-python.python",
-				"svelte.svelte-vscode"
+		"ms-python.python",
+		"svelte.svelte-vscode",
+		"mtfuji.vs-code-pipe",
+		"ryuta46.multi-command"
             ]
         }
     }
